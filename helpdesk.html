@@ -3,364 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IT Helpdesk System</title>
+    <title>ระบบแจ้งซ่อม IT Helpdesk</title>
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts (Kanit) -->
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
 
     <style>
         body {
-            font-family: 'Kanit', sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f8f9fa;
         }
-        .navbar-brand {
-            font-weight: 600;
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .container {
+            max-width: 1140px;
         }
         .card {
             border: none;
             border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,.1);
+            transition: all 0.2s ease-in-out;
         }
-        .form-label {
-            font-weight: 500;
+        .form-control, .form-select {
+            border-radius: 0.5rem;
         }
         .btn-primary {
-            background-color: #0d6efd;
-            border-color: #0d6efd;
+            background-color: #0056b3;
+            border-color: #0056b3;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.25rem;
             font-weight: 500;
         }
         .btn-primary:hover {
-            background-color: #0b5ed7;
-            border-color: #0a58ca;
+            background-color: #004494;
+            border-color: #003b80;
         }
-        .table-hover tbody tr:hover {
-            background-color: #f8f9fa;
+        .btn-success {
+             border-radius: 0.5rem;
         }
-        .badge {
+        .nav-pills .nav-link {
+            color: #495057;
+            border-radius: 0.5rem;
+        }
+        .nav-pills .nav-link.active {
+            color: #fff;
+            background-color: #0056b3;
+        }
+        .table {
+            vertical-align: middle;
+        }
+        .status-badge {
             font-size: 0.9em;
-            font-weight: 500;
+            padding: 0.5em 0.75em;
         }
-        #admin-view {
-            display: none; /* ซ่อนหน้าแอดมินไว้ก่อน */
-        }
-        .loading-spinner {
-            display: none;
+        #loading-spinner, #it-loading-spinner {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            z-index: 1050;
+            z-index: 1050; /* Ensure it's above other content */
+        }
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
         }
     </style>
 </head>
 <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-headset"></i>
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-headset me-2"></i>
                 IT Helpdesk System
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#" id="user-view-btn">หน้าแจ้งปัญหา</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" id="admin-view-btn">สำหรับเจ้าหน้าที่ IT</a>
-                    </li>
-                </ul>
-            </div>
         </div>
     </nav>
 
-    <!-- Loading Spinner -->
-    <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner-border text-primary" role="status">
+    <div class="container mt-4">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills mb-4 justify-content-center" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="user-view-tab" data-bs-toggle="pill" data-bs-target="#user-view" type="button" role="tab" aria-controls="user-view" aria-selected="true">
+                    <i class="fas fa-paper-plane me-2"></i>แจ้งปัญหา
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="it-view-tab" data-bs-toggle="pill" data-bs-target="#it-view" type="button" role="tab" aria-controls="it-view" aria-selected="false">
+                    <i class="fas fa-user-shield me-2"></i>สำหรับเจ้าหน้าที่ IT
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="pills-tabContent">
+            <!-- User View: Form for submitting tickets -->
+            <div class="tab-pane fade show active" id="user-view" role="tabpanel" aria-labelledby="user-view-tab">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body p-4 p-md-5">
+                                <h3 class="card-title text-center mb-4">แบบฟอร์มแจ้งปัญหา</h3>
+                                <form id="helpdesk-form">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">ชื่อ-นามสกุล ผู้แจ้ง</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="department" class="form-label">แผนก/ฝ่าย</label>
+                                        <select class="form-select" id="department" name="department" required>
+                                            <option selected disabled value="">-- เลือกแผนก --</option>
+                                            <option>การตลาด</option>
+                                            <option>ฝ่ายขาย</option>
+                                            <option>บัญชี/การเงิน</option>
+                                            <option>บุคคล</option>
+                                            <option>IT</option>
+                                            <option>อื่นๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="problemType" class="form-label">ประเภทปัญหา</label>
+                                        <select class="form-select" id="problemType" name="problemType" required>
+                                            <option selected disabled value="">-- เลือกประเภทปัญหา --</option>
+                                            <option>Hardware (อุปกรณ์คอมพิวเตอร์)</option>
+                                            <option>Software (โปรแกรม)</option>
+                                            <option>Network (ระบบเครือข่าย/อินเทอร์เน็ต)</option>
+                                            <option>Printer (เครื่องพิมพ์)</option>
+                                            <option>Email (อีเมล)</option>
+                                            <option>อื่นๆ</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="details" class="form-label">รายละเอียดปัญหา</label>
+                                        <textarea class="form-control" id="details" name="details" rows="4" required></textarea>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-check-circle me-2"></i>ส่งเรื่อง
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IT View: Table of tickets -->
+            <div class="tab-pane fade" id="it-view" role="tabpanel" aria-labelledby="it-view-tab">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                             <h3 class="card-title mb-0">รายการแจ้งซ่อมทั้งหมด</h3>
+                             <button class="btn btn-outline-primary" id="refresh-btn"><i class="fas fa-sync-alt me-2"></i>รีเฟรช</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">ผู้แจ้ง</th>
+                                        <th scope="col">แผนก</th>
+                                        <th scope="col">ประเภทปัญหา</th>
+                                        <th scope="col">รายละเอียด</th>
+                                        <th scope="col">วันที่แจ้ง</th>
+                                        <th scope="col">สถานะ</th>
+                                        <th scope="col">วันที่ปิด</th>
+                                        <th scope="col">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticket-table-body">
+                                    <!-- Ticket rows will be inserted here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                         <div id="it-loading-spinner" class="d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner for form submission -->
+    <div id="loading-spinner" class="d-none">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-
-    <div class="container mt-4">
-        <!-- User View: Form -->
-        <div id="user-view">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-edit"></i> แบบฟอร์มแจ้งปัญหา IT</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div id="alert-container"></div>
-                            <form id="helpdesk-form">
-                                <div class="mb-3">
-                                    <label for="userName" class="form-label">ชื่อ-นามสกุล ผู้แจ้ง</label>
-                                    <input type="text" class="form-control" id="userName" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="department" class="form-label">แผนก / ฝ่าย</label>
-                                    <input type="text" class="form-control" id="department" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="problemType" class="form-label">ประเภทปัญหา</label>
-                                    <select class="form-select" id="problemType" required>
-                                        <option value="" selected disabled>-- กรุณาเลือก --</option>
-                                        <option value="Hardware">คอมพิวเตอร์ / อุปกรณ์ (Hardware)</option>
-                                        <option value="Software">โปรแกรม (Software)</option>
-                                        <option value="Network">ระบบเครือข่าย / อินเทอร์เน็ต (Network)</option>
-                                        <option value="Printer">เครื่องพิมพ์ (Printer)</option>
-                                        <option value="Other">อื่นๆ</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="problemDetails" class="form-label">รายละเอียดปัญหา</label>
-                                    <textarea class="form-control" id="problemDetails" rows="4" required></textarea>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="fas fa-paper-plane"></i> ส่งเรื่อง
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin View: Dashboard -->
-        <div id="admin-view">
-             <div class="card">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-tachometer-alt"></i> IT Dashboard - รายการแจ้งปัญหา</h5>
-                    <button class="btn btn-light btn-sm" id="refresh-btn">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div id="admin-alert-container"></div>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>#</th>
-                                    <th>สถานะ</th>
-                                    <th>ผู้แจ้ง</th>
-                                    <th>แผนก</th>
-                                    <th>ประเภทปัญหา</th>
-                                    <th>รายละเอียด</th>
-                                    <th>เวลาแจ้ง</th>
-                                    <th>เวลาปิดเคส</th>
-                                    <th>จัดการ</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ticket-table-body">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
+    
+    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // !!! IMPORTANT !!!
-        // PASTE YOUR GOOGLE APPS SCRIPT URL HERE
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwh57BzFjGMhZLqlRd-WrYG6jyA-_8ULYdcDLdn_XUSacEIr78jybwQTFVhY66stV3o/exec';
+        // URL for the Google Apps Script Web App
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhtnA2iDuTKEWovxsKX1-PcJt4MjgERQs2cvKedtEL9493KMSEGVjOEaf69SgcwQK08A/exec";
 
         // DOM Elements
-        const userView = document.getElementById('user-view');
-        const adminView = document.getElementById('admin-view');
-        const userViewBtn = document.getElementById('user-view-btn');
-        const adminViewBtn = document.getElementById('admin-view-btn');
-        const form = document.getElementById('helpdesk-form');
-        const loadingSpinner = document.getElementById('loadingSpinner');
+        const helpdeskForm = document.getElementById('helpdesk-form');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const itLoadingSpinner = document.getElementById('it-loading-spinner');
         const ticketTableBody = document.getElementById('ticket-table-body');
+        const itViewTab = document.getElementById('it-view-tab');
         const refreshBtn = document.getElementById('refresh-btn');
 
-        // --- View Switching Logic ---
-        userViewBtn.addEventListener('click', (e) => {
+        /**
+         * Handles the form submission to create a new helpdesk ticket.
+         * @param {Event} e - The form submission event.
+         */
+        helpdeskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            userView.style.display = 'block';
-            adminView.style.display = 'none';
-            userViewBtn.classList.add('active');
-            adminViewBtn.classList.remove('active');
-        });
+            loadingSpinner.classList.remove('d-none');
 
-        adminViewBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            userView.style.display = 'none';
-            adminView.style.display = 'block';
-            userViewBtn.classList.remove('active');
-            adminViewBtn.classList.add('active');
-            loadTickets(); // Load tickets when switching to admin view
+            const formData = new FormData(helpdeskForm);
+            const data = Object.fromEntries(formData.entries());
+            data.action = 'addTicket'; // Add action for the script to identify the task
+
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Important for sending to Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                // Since 'no-cors' mode doesn't allow reading the response, we assume success if no network error occurs.
+                alert('ส่งข้อมูลสำเร็จ! เจ้าหน้าที่จะดำเนินการตรวจสอบโดยเร็วที่สุด');
+                helpdeskForm.reset();
+
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง');
+            } finally {
+                loadingSpinner.classList.add('d-none');
+            }
         });
         
-        refreshBtn.addEventListener('click', () => {
-             loadTickets();
-        });
+        /**
+         * Fetches all tickets from the Google Sheet and renders them in the table.
+         */
+        async function fetchAndRenderTickets() {
+            itLoadingSpinner.classList.remove('d-none');
+            ticketTableBody.innerHTML = ''; // Clear existing table data
 
-        // --- Alert Function ---
-        function showAlert(message, type, containerId) {
-            const container = document.getElementById(containerId);
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = [
-                `<div class="alert alert-${type} alert-dismissible" role="alert">`,
-                `   <div>${message}</div>`,
-                '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-                '</div>'
-            ].join('');
-            container.innerHTML = ''; // Clear previous alerts
-            container.append(wrapper);
-        }
-
-        // --- Form Submission Logic ---
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                showAlert('<strong>เกิดข้อผิดพลาด:</strong> กรุณาตั้งค่า Google Apps Script URL ในไฟล์โค้ดก่อนใช้งาน', 'danger', 'alert-container');
-                return;
-            }
-
-            loadingSpinner.style.display = 'block';
-
-            const formData = {
-                userName: document.getElementById('userName').value,
-                department: document.getElementById('department').value,
-                problemType: document.getElementById('problemType').value,
-                problemDetails: document.getElementById('problemDetails').value,
-            };
-
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ action: 'add', data: formData })
-            })
-            .then(res => res.json())
-            .then(data => {
-                loadingSpinner.style.display = 'none';
-                if (data.result === 'success') {
-                    showAlert('<strong>ส่งเรื่องสำเร็จ!</strong> เจ้าหน้าที่จะดำเนินการตรวจสอบและติดต่อกลับโดยเร็วที่สุด', 'success', 'alert-container');
-                    form.reset();
-                } else {
-                    throw new Error(data.message || 'เกิดข้อผิดพลาดบางอย่าง');
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getTickets`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
-            })
-            .catch(error => {
-                loadingSpinner.style.display = 'none';
-                console.error('Error:', error);
-                showAlert(`<strong>เกิดข้อผิดพลาด:</strong> ${error.message}`, 'danger', 'alert-container');
-            });
-        });
+                const result = await response.json();
 
-        // --- Admin Dashboard Logic ---
-        function loadTickets() {
-            if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                showAlert('<strong>เกิดข้อผิดพลาด:</strong> กรุณาตั้งค่า Google Apps Script URL ในไฟล์โค้ดก่อนใช้งาน', 'danger', 'admin-alert-container');
-                return;
-            }
-            loadingSpinner.style.display = 'block';
-            ticketTableBody.innerHTML = '<tr><td colspan="9" class="text-center">กำลังโหลดข้อมูล...</td></tr>';
-
-            fetch(`${SCRIPT_URL}?action=get`, { method: 'GET', mode: 'cors' })
-                .then(res => res.json())
-                .then(response => {
-                    loadingSpinner.style.display = 'none';
-                    if (response.result === 'success') {
-                        populateTable(response.data);
+                if (result.success && Array.isArray(result.data)) {
+                    // The first row from Google Sheet is headers, so we skip it.
+                    const tickets = result.data.slice(1); 
+                    if (tickets.length === 0) {
+                        ticketTableBody.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีรายการแจ้งซ่อม</td></tr>';
                     } else {
-                        throw new Error(response.message || 'ไม่สามารถโหลดข้อมูลได้');
+                        tickets.forEach(ticket => {
+                            const [id, name, department, problemType, details, submissionDate, status, closingDate] = ticket;
+                            const row = document.createElement('tr');
+
+                            // Format dates for better readability
+                            const formattedSubmissionDate = submissionDate ? new Date(submissionDate).toLocaleString('th-TH') : '-';
+                            const formattedClosingDate = closingDate ? new Date(closingDate).toLocaleString('th-TH') : '-';
+
+                            // Determine badge color based on status
+                            const statusBadge = status === 'ปิดเคส' 
+                                ? `<span class="badge rounded-pill bg-success status-badge">${status}</span>`
+                                : `<span class="badge rounded-pill bg-warning text-dark status-badge">${status || 'รอดำเนินการ'}</span>`;
+                            
+                            row.innerHTML = `
+                                <td>${id}</td>
+                                <td>${name}</td>
+                                <td>${department}</td>
+                                <td>${problemType}</td>
+                                <td>${details}</td>
+                                <td>${formattedSubmissionDate}</td>
+                                <td>${statusBadge}</td>
+                                <td>${formattedClosingDate}</td>
+                                <td>
+                                    ${status !== 'ปิดเคส' ? 
+                                    `<button class="btn btn-sm btn-success" onclick="closeTicket('${id}')">
+                                        <i class="fas fa-check"></i> ปิดเคส
+                                    </button>` : 
+                                    '-'}
+                                </td>
+                            `;
+                            ticketTableBody.appendChild(row);
+                        });
                     }
-                })
-                .catch(error => {
-                    loadingSpinner.style.display = 'none';
-                    console.error('Error loading tickets:', error);
-                    ticketTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}</td></tr>`;
-                });
-        }
-
-        function populateTable(data) {
-            ticketTableBody.innerHTML = '';
-            if (data.length === 0) {
-                ticketTableBody.innerHTML = '<tr><td colspan="9" class="text-center">ยังไม่มีรายการแจ้งปัญหา</td></tr>';
-                return;
-            }
-
-            // Data from Apps Script has headers, so we skip the first row (i=1)
-            // And we process in reverse to show newest first
-            for (let i = data.length - 1; i >= 1; i--) {
-                const rowData = data[i];
-                const row = document.createElement('tr');
-
-                const status = rowData[5] || 'Open';
-                const statusBadge = status === 'Closed' 
-                    ? '<span class="badge bg-success">Closed</span>'
-                    : '<span class="badge bg-warning text-dark">Open</span>';
-
-                row.innerHTML = `
-                    <td>${rowData[0]}</td>
-                    <td>${statusBadge}</td>
-                    <td>${rowData[1]}</td>
-                    <td>${rowData[2]}</td>
-                    <td>${rowData[3]}</td>
-                    <td style="max-width: 200px; white-space: pre-wrap;">${rowData[4]}</td>
-                    <td>${new Date(rowData[6]).toLocaleString('th-TH')}</td>
-                    <td>${rowData[7] ? new Date(rowData[7]).toLocaleString('th-TH') : '-'}</td>
-                    <td>
-                        ${status !== 'Closed' ? `<button class="btn btn-sm btn-success" onclick="closeTicket(${rowData[0]})">ปิดเคส</button>` : `<button class="btn btn-sm btn-secondary" disabled>ปิดแล้ว</button>`}
-                    </td>
-                `;
-                ticketTableBody.appendChild(row);
-            }
-        }
-
-        function closeTicket(rowId) {
-            if (!confirm(`คุณต้องการปิดเคสหมายเลข #${rowId} ใช่หรือไม่?`)) {
-                return;
-            }
-
-            loadingSpinner.style.display = 'block';
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ action: 'close', rowId: rowId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                loadingSpinner.style.display = 'none';
-                if (data.result === 'success') {
-                    showAlert(`เคส #${rowId} ถูกปิดเรียบร้อยแล้ว`, 'success', 'admin-alert-container');
-                    loadTickets(); // Refresh the table
                 } else {
-                    throw new Error(data.message || 'เกิดข้อผิดพลาดในการปิดเคส');
+                     throw new Error(result.message || 'Failed to fetch data.');
                 }
-            })
-            .catch(error => {
-                loadingSpinner.style.display = 'none';
-                console.error('Error closing ticket:', error);
-                showAlert(`<strong>เกิดข้อผิดพลาด:</strong> ${error.message}`, 'danger', 'admin-alert-container');
-            });
+
+            } catch (error) {
+                console.error('Error fetching tickets:', error);
+                ticketTableBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">ไม่สามารถโหลดข้อมูลได้: ${error.message}</td></tr>`;
+            } finally {
+                itLoadingSpinner.classList.add('d-none');
+            }
         }
+        
+        /**
+         * Sends a request to close a specific ticket.
+         * @param {string} ticketId - The ID of the ticket to close.
+         */
+        async function closeTicket(ticketId) {
+            if (!confirm(`คุณต้องการปิดเคส ID: ${ticketId} ใช่หรือไม่?`)) {
+                return;
+            }
+            itLoadingSpinner.classList.remove('d-none');
+
+            const data = { action: 'closeTicket', id: ticketId };
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // 'no-cors' for cross-origin POST to Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                alert(`เคส ID: ${ticketId} ถูกปิดเรียบร้อยแล้ว`);
+                // Refresh the list to show the updated status
+                fetchAndRenderTickets();
+
+            } catch (error) {
+                console.error('Error closing ticket:', error);
+                alert('เกิดข้อผิดพลาดในการปิดเคส');
+            } finally {
+                // The spinner will be hidden by fetchAndRenderTickets
+            }
+        }
+
+        // Add event listener to fetch data when the IT view is shown
+        itViewTab.addEventListener('shown.bs.tab', fetchAndRenderTickets);
+
+        // Add event listener for the refresh button
+        refreshBtn.addEventListener('click', fetchAndRenderTickets);
+        
+        // Expose closeTicket to the global scope so it can be called from the onclick attribute
+        window.closeTicket = closeTicket;
 
     </script>
+
 </body>
 </html>
